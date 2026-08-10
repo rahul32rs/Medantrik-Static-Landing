@@ -1,0 +1,20 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+
+/* Apply Poppins font globally */
+body {
+  font-family: 'Poppins', sans-serif;
+  cursor: url('/cursor.ico'), auto;
+}
+
+/* Interactive hover effects */
+a:hover,
+button:hover,
+input:hover,
+select:hover {
+  cursor: pointer;
+}
+/* globals.css */
+@layer utilities {
+  .animate-spin-slower { animation: spin 22s linear infinite; } /* slower than default */
+}
