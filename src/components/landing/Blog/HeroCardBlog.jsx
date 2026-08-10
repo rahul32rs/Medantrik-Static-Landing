@@ -8,8 +8,6 @@ const HeroCardBlog = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const assetBaseUrl = import.meta.env.VITE_ASSET_BASE_URL;
-
   useEffect(() => {
     let ignore = false;
     setLoading(true);
@@ -17,7 +15,7 @@ const HeroCardBlog = () => {
     getBlogs()
       .then((res) => {
         if (ignore) return;
-        const list = res?.data?.data || [];
+        const list = res?.data?.blogs || res?.data?.data || [];
         setBlogs(list);
       })
       .catch((err) => {
@@ -34,6 +32,17 @@ const HeroCardBlog = () => {
       ignore = true;
     };
   }, []);
+
+  const getImageUrl = (post) => {
+    const imgSrc = post?.cover_img || post?.featuredImage || post?.image_path || post?.image;
+    if (!imgSrc) return null;
+    return imgSrc;
+  };
+
+  const getDateString = (post) => {
+    const dateVal = post?.createdAt || post?.created_at || post?.publishDate;
+    return dateVal ? new Date(dateVal).toLocaleDateString() : "";
+  };
 
   /* -------------------- STATES -------------------- */
 
@@ -70,64 +79,68 @@ const HeroCardBlog = () => {
       </h2>
 
       <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-        {blogs.map((post) => (
-          <Link
-            key={post.id}
-            to={`/blog/${post.id}`}
-            state={{ blog: post }}
-            className="group"
-          >
-            <article className="bg-white border border-gray-200 rounded-2xl shadow-lg p-4 transition-all duration-300 hover:-translate-y-2 hover:scale-[1.02] hover:shadow-2xl h-full flex flex-col">
-              
-              {/* Image */}
-              <div className="relative mb-4">
-                {post.image_path ? (
-                  <img
-                    src={`${assetBaseUrl}/${post.image_path}`}
-                    alt={post.title}
-                    className="rounded-xl w-full h-52 object-cover transition-transform duration-500 group-hover:scale-105"
-                    loading="lazy"
+        {blogs.map((post) => {
+          const imageUrl = getImageUrl(post);
+          const formattedDate = getDateString(post);
+          const postTitle = post.post_title || post.title;
+          const postExcerpt = post.description || post.content;
+
+          return (
+            <Link
+              key={post.id}
+              to={`/blog/${post.id}`}
+              state={{ blog: post }}
+              className="group"
+            >
+              <article className="bg-white border border-gray-200 rounded-2xl shadow-lg p-4 transition-all duration-300 hover:-translate-y-2 hover:scale-[1.02] hover:shadow-2xl h-full flex flex-col">
+                
+                {/* Image */}
+                <div className="relative mb-4">
+                  {imageUrl ? (
+                    <img
+                      src={imageUrl}
+                      alt={postTitle}
+                      className="rounded-xl w-full h-52 object-cover transition-transform duration-500 group-hover:scale-105"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="h-52 rounded-xl bg-gray-100 flex items-center justify-center text-gray-400">
+                      No Image
+                    </div>
+                  )}
+
+                  <span className="absolute top-3 left-3 text-xs font-semibold px-3 py-1 rounded-full bg-orange-100 text-orange-700 shadow-sm">
+                    Blog
+                  </span>
+                </div>
+
+                {/* Content */}
+                <div className="flex flex-col flex-grow">
+                  <h3 className="text-lg md:text-xl font-bold text-gray-800 leading-snug line-clamp-2 group-hover:text-orange-600 transition">
+                    {postTitle}
+                  </h3>
+
+                  <div
+                    className="mt-3 text-sm text-gray-600 line-clamp-2"
+                    dangerouslySetInnerHTML={{ __html: postExcerpt }}
                   />
-                ) : (
-                  <div className="h-52 rounded-xl bg-gray-100 flex items-center justify-center text-gray-400">
-                    No Image
-                  </div>
-                )}
 
-                <span className="absolute top-3 left-3 text-xs font-semibold px-3 py-1 rounded-full bg-orange-100 text-orange-700 shadow-sm">
-                  Blog
-                </span>
-              </div>
+                  <div className="mt-auto pt-6 flex items-center justify-between text-sm text-gray-500">
+                    <div className="flex items-center gap-2">
+                      <FaUser className="text-orange-500" />
+                      <span>Admin</span>
+                    </div>
 
-              {/* Content */}
-              <div className="flex flex-col flex-grow">
-                <h3 className="text-lg md:text-xl font-bold text-gray-800 leading-snug line-clamp-2 group-hover:text-orange-600 transition">
-                  {post.title}
-                </h3>
-
-                <div
-                  className="mt-3 text-sm text-gray-600 line-clamp-2"
-                  dangerouslySetInnerHTML={{ __html: post.content }}
-                />
-
-                <div className="mt-auto pt-6 flex items-center justify-between text-sm text-gray-500">
-                  <div className="flex items-center gap-2">
-                    <FaUser className="text-orange-500" />
-                    <span>Admin</span>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <FaCalendarAlt className="text-orange-500" />
-                    <span>
-                      {post.created_at &&
-                        new Date(post.created_at).toLocaleDateString()}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <FaCalendarAlt className="text-orange-500" />
+                      <span>{formattedDate}</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </article>
-          </Link>
-        ))}
+              </article>
+            </Link>
+          );
+        })}
       </div>
     </div>
   );

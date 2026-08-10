@@ -21,15 +21,13 @@ export default function Home10() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const assetBaseUrl = import.meta.env.VITE_ASSET_BASE_URL;
-
   useEffect(() => {
     let ignore = false;
 
     getBlogs()
       .then((res) => {
         if (ignore) return;
-        const list = res?.data?.data || [];
+        const list = res?.data?.blogs || res?.data?.data || [];
         setBlogs(list.slice(0, 3)); // 🔥 ONLY 3 LATEST
       })
       .catch((err) => {
@@ -45,6 +43,17 @@ export default function Home10() {
       ignore = true;
     };
   }, []);
+
+  const getImageUrl = (post) => {
+    const imgSrc = post?.cover_img || post?.featuredImage || post?.image_path || post?.image;
+    if (!imgSrc) return null;
+    return imgSrc;
+  };
+
+  const getDateString = (post) => {
+    const dateVal = post?.createdAt || post?.created_at || post?.publishDate;
+    return dateVal ? new Date(dateVal).toLocaleDateString() : "";
+  };
 
   const onKeyNavigate = (e, to) => {
     if (e.key === 'Enter' || e.key === ' ') {
@@ -104,65 +113,68 @@ export default function Home10() {
 
         {/* Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10 xl:gap-12">
-          {blogs.map((post, idx) => (
-            <motion.article
-              key={post.id}
-              onClick={() => navigate(`/blog/${post.id}`, { state: { blog: post } })}
-              onKeyDown={(e) =>
-                onKeyNavigate(e, `/blog/${post.id}`)
-              }
-              tabIndex={0}
-              className="bg-white border border-gray-200 rounded-2xl shadow-lg p-4 cursor-pointer transition-all duration-300 hover:-translate-y-2 hover:scale-[1.02] hover:shadow-2xl focus:outline-none focus:ring-4 focus:ring-orange-200"
-              variants={cardVariants}
-              initial={reduceMotion ? false : 'hidden'}
-              whileInView={reduceMotion ? undefined : 'visible'}
-              viewport={{ once: true, amount: 0.2 }}
-              custom={idx}
-              whileHover={
-                reduceMotion
-                  ? undefined
-                  : { rotateX: 3, rotateY: -3 }
-              }
-              style={{ transformStyle: 'preserve-3d' }}
-            >
-              <div className="relative mb-4">
-                {post.image_path ? (
-                  <img
-                    src={`${assetBaseUrl}/${post.image_path}`}
-                    alt={post.title}
-                    className="rounded-xl w-full h-52 object-cover"
-                    loading="lazy"
-                  />
-                ) : (
-                  <div className="h-52 rounded-xl bg-gray-100 flex items-center justify-center text-gray-400">
-                    No Image
-                  </div>
-                )}
+          {blogs.map((post, idx) => {
+            const imageUrl = getImageUrl(post);
+            const formattedDate = getDateString(post);
+            const postTitle = post.post_title || post.title;
 
-                <span className="absolute top-3 left-3 text-xs font-semibold px-3 py-1 rounded-full bg-orange-100 text-orange-700 shadow-sm">
-                  Blog
-                </span>
-              </div>
+            return (
+              <motion.article
+                key={post.id}
+                onClick={() => navigate(`/blog/${post.id}`, { state: { blog: post } })}
+                onKeyDown={(e) =>
+                  onKeyNavigate(e, `/blog/${post.id}`)
+                }
+                tabIndex={0}
+                className="bg-white border border-gray-200 rounded-2xl shadow-lg p-4 cursor-pointer transition-all duration-300 hover:-translate-y-2 hover:scale-[1.02] hover:shadow-2xl focus:outline-none focus:ring-4 focus:ring-orange-200"
+                variants={cardVariants}
+                initial={reduceMotion ? false : 'hidden'}
+                whileInView={reduceMotion ? undefined : 'visible'}
+                viewport={{ once: true, amount: 0.2 }}
+                custom={idx}
+                whileHover={
+                  reduceMotion
+                    ? undefined
+                    : { rotateX: 3, rotateY: -3 }
+                }
+                style={{ transformStyle: 'preserve-3d' }}
+              >
+                <div className="relative mb-4">
+                  {imageUrl ? (
+                    <img
+                      src={imageUrl}
+                      alt={postTitle}
+                      className="rounded-xl w-full h-52 object-cover"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="h-52 rounded-xl bg-gray-100 flex items-center justify-center text-gray-400">
+                      No Image
+                    </div>
+                  )}
 
-              <h3 className="text-lg md:text-xl font-bold text-gray-800 mb-3 line-clamp-2">
-                {post.title}
-              </h3>
-
-              <div className="flex items-center justify-between text-sm text-gray-500">
-                <div className="flex items-center gap-2">
-                  <FaUser className="text-orange-500" />
-                  <span>Admin</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <FaCalendarAlt className="text-orange-500" />
-                  <span>
-                    {post.created_at &&
-                      new Date(post.created_at).toLocaleDateString()}
+                  <span className="absolute top-3 left-3 text-xs font-semibold px-3 py-1 rounded-full bg-orange-100 text-orange-700 shadow-sm">
+                    Blog
                   </span>
                 </div>
-              </div>
-            </motion.article>
-          ))}
+
+                <h3 className="text-lg md:text-xl font-bold text-gray-800 mb-3 line-clamp-2">
+                  {postTitle}
+                </h3>
+
+                <div className="flex items-center justify-between text-sm text-gray-500">
+                  <div className="flex items-center gap-2">
+                    <FaUser className="text-orange-500" />
+                    <span>Admin</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <FaCalendarAlt className="text-orange-500" />
+                    <span>{formattedDate}</span>
+                  </div>
+                </div>
+              </motion.article>
+            );
+          })}
         </div>
       </div>
     </div>

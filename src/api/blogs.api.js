@@ -1,8 +1,34 @@
-import axiosClient from "./axiosClient";
+import blogsData from "../data/blogs.json";
 
-// ✅ DEFAULT EMPTY OBJECT ADDED
-export const getBlogs = ({ page = 1, limit = 5, search = "" } = {}) => {
-  return axiosClient.get("/get_blogs.php", {
-    params: { page, limit, search },
-  });
+export const getBlogs = async ({ page = 1, limit = 10, search = "" } = {}) => {
+  let filtered = blogsData;
+  if (search) {
+    const s = search.toLowerCase();
+    filtered = blogsData.filter(
+      (b) =>
+        (b.title && b.title.toLowerCase().includes(s)) ||
+        (b.post_title && b.post_title.toLowerCase().includes(s)) ||
+        (b.description && b.description.toLowerCase().includes(s)) ||
+        (b.content && b.content.toLowerCase().includes(s))
+    );
+  }
+  return {
+    data: {
+      blogs: filtered,
+      data: filtered,
+      totalBlogs: filtered.length,
+    },
+  };
+};
+
+export const getBlogById = async (id) => {
+  const blog = blogsData.find((b) => b.id.toString() === id.toString());
+  return { data: blog || null };
+};
+
+export const getBlogBySlug = async (slug) => {
+  const blog = blogsData.find(
+    (b) => b.id.toString() === slug.toString() || b.slug === slug
+  );
+  return { data: blog || null };
 };

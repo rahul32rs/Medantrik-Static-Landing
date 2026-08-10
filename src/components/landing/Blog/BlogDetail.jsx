@@ -1,21 +1,64 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { FaArrowLeft, FaCalendarAlt } from "react-icons/fa";
+import { FaArrowLeft, FaCalendarAlt, FaUser } from "react-icons/fa";
+import { getBlogById } from "../../../api/blogs.api";
 
 const BlogDetail = () => {
   const { id } = useParams();
   const { state } = useLocation();
   const navigate = useNavigate();
 
-  const blog = state?.blog;
-  const assetBaseUrl = import.meta.env.VITE_ASSET_BASE_URL;
+  const [blog, setBlog] = useState(state?.blog || null);
+  const [loading, setLoading] = useState(!state?.blog);
+  const [error, setError] = useState(null);
 
-  // 🔴 Direct URL / refresh case
-  if (!blog || blog.id.toString() !== id) {
+  useEffect(() => {
+    if (!blog || blog.id?.toString() !== id) {
+      setLoading(true);
+      setError(null);
+
+      getBlogById(id)
+        .then((res) => {
+          if (res.data) {
+            setBlog(res.data);
+          } else {
+            setError("Blog post not found.");
+          }
+        })
+        .catch((err) => {
+          console.error("Error fetching static blog details:", err);
+          setError("Blog post not found.");
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    }
+  }, [id]);
+
+  const getImageUrl = (b) => {
+    const imgSrc = b?.cover_img || b?.featuredImage || b?.image_path || b?.image;
+    if (!imgSrc) return null;
+    return imgSrc;
+  };
+
+  const getDateString = (b) => {
+    const dateVal = b?.createdAt || b?.created_at || b?.publishDate;
+    return dateVal ? new Date(dateVal).toLocaleDateString() : "";
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-[60vh] flex flex-col items-center justify-center text-center px-4">
+        <p className="text-gray-500 text-lg">Loading blog details...</p>
+      </div>
+    );
+  }
+
+  if (error || !blog) {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center text-center px-4">
         <p className="text-gray-500 mb-6 text-lg">
-          Blog data not available.
+          {error || "Blog post not available."}
         </p>
         <button
           onClick={() => navigate("/blog")}
@@ -27,6 +70,11 @@ const BlogDetail = () => {
       </div>
     );
   }
+
+  const imageUrl = getImageUrl(blog);
+  const formattedDate = getDateString(blog);
+  const postTitle = blog.post_title || blog.title;
+  const postContent = blog.content || blog.description;
 
   return (
     <div className="bg-gradient-to-b from-gray-50 to-white min-h-screen">
@@ -46,11 +94,11 @@ const BlogDetail = () => {
         {/* Blog Card */}
         <article className="bg-white shadow-2xl rounded-3xl overflow-hidden">
           {/* Image */}
-          {blog.image_path && (
+          {imageUrl && (
             <div className="relative">
               <img
-                src={`${assetBaseUrl}/${blog.image_path}`}
-                alt={blog.title}
+                src={imageUrl}
+                alt={postTitle}
                 className="w-full h-[360px] object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
@@ -60,17 +108,22 @@ const BlogDetail = () => {
           {/* Content */}
           <div className="p-6 sm:p-10 lg:p-14">
             {/* Meta */}
-            <div className="flex items-center justify-center gap-3 text-sm text-gray-500 mb-4">
-              <FaCalendarAlt className="text-orange-500" />
-              <span>
-                {blog.created_at &&
-                  new Date(blog.created_at).toLocaleDateString()}
-              </span>
+            <div className="flex items-center justify-center gap-6 text-sm text-gray-500 mb-4">
+              <div className="flex items-center gap-2">
+                <FaUser className="text-orange-500" />
+                <span>Admin</span>
+              </div>
+              {formattedDate && (
+                <div className="flex items-center gap-2">
+                  <FaCalendarAlt className="text-orange-500" />
+                  <span>{formattedDate}</span>
+                </div>
+              )}
             </div>
 
             {/* Title */}
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-center text-gray-900 leading-tight mb-10">
-              {blog.title}
+              {postTitle}
             </h1>
 
             {/* Divider */}
@@ -79,15 +132,15 @@ const BlogDetail = () => {
             {/* Article Content */}
             <div
               className="prose prose-lg max-w-none prose-headings:text-gray-900 prose-p:text-gray-700 prose-a:text-orange-600 prose-strong:text-gray-900"
-              dangerouslySetInnerHTML={{ __html: blog.content }}
+              dangerouslySetInnerHTML={{ __html: postContent }}
             />
 
             {/* Footer */}
-            <div className="mt-16 pt-8 border-t text-sm text-gray-500 text-right">
-              Published on{" "}
-              {blog.created_at &&
-                new Date(blog.created_at).toLocaleDateString()}
-            </div>
+            {formattedDate && (
+              <div className="mt-16 pt-8 border-t text-sm text-gray-500 text-right">
+                Published on {formattedDate}
+              </div>
+            )}
           </div>
         </article>
       </div>
