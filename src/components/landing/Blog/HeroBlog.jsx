@@ -22,7 +22,9 @@ export default function BlogHero() {
           </h1>
 
           <p className="text-black/90 text-base md:text-lg max-w-lg">
-            Explore the future of respiratory healthcare through expert insights, breakthrough medical technologies, and clinical innovation. Medantrik's blogs cover the latest advancements in respiratory diagnostics, connected medical devices, and digital health—driving better care and improved patient outcomes.
+            Medantrik MedTech ke blogs aapko le jaate hain respiratory care ke future
+            mein — jahan AI, connected devices aur clinical innovation milkar
+            patient outcomes ko better bana rahe hain.
           </p>
 
           {/* CTA */}

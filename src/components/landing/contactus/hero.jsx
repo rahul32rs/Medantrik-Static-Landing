@@ -16,9 +16,9 @@ const Hero = () => {
           <p className="text-black text-base md:text-lg max-w-lg">
             Explore Medantrik's innovative respiratory technologies designed for modern healthcare. Connect with our team for product demonstrations, technical consultation, clinical collaborations, and dedicated customer support.
           </p>
-          <button className="bg-black text-white px-6 py-3 rounded-full font-semibold flex items-center justify-center gap-2 mx-auto md:mx-0 hover:bg-gray-800 transition">
+          {/* <button className="bg-black text-white px-6 py-3 rounded-full font-semibold flex items-center justify-center gap-2 mx-auto md:mx-0 hover:bg-gray-800 transition">
             Schedule a Demo <span className="text-lg">➜</span>
-          </button>
+          </button> */}
         </div>
 
         {/* RIGHT — EXACT 2nd IMAGE STYLE */}

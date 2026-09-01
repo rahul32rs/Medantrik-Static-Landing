@@ -21,6 +21,8 @@ export default function Home10() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const assetBaseUrl = import.meta.env.VITE_ASSET_BASE_URL;
+
   useEffect(() => {
     let ignore = false;
 
@@ -45,14 +47,65 @@ export default function Home10() {
   }, []);
 
   const getImageUrl = (post) => {
-    const imgSrc = post?.cover_img || post?.featuredImage || post?.image_path || post?.image;
+    let imgSrc = post?.featuredImage || post?.image_path || post?.image;
+
+    // Fallback: If no explicit featured image, extract first <img> tag from blog content
+    if (!imgSrc && post?.content) {
+      const match = post.content.match(/<img[^>]+src=["']([^"']+)["']/i);
+      if (match && match[1]) {
+        imgSrc = match[1];
+      }
+    }
+
+    // --- HARDCODED FALLBACK FOR SPECIFIC BLOGS ---
+    if (!imgSrc) {
+      if (post?.title?.includes("NODEX Device")) {
+        return "/images/blog/blog1.png";
+      } else if (post?.title?.includes("Spiritual Growth")) {
+        return "/images/blog/blog2.jpg";
+      } else if (post?.title?.includes("Modern Life")) {
+        return "/images/blog/blog3.png";
+      } else if (post?.title?.includes("Understanding Medantrik")) {
+        return "/images/blog/blog4.jpg";
+      }
+    }
+
     if (!imgSrc) return null;
-    return imgSrc;
+    imgSrc = imgSrc.trim();
+
+    if (imgSrc.startsWith("//")) {
+      return `https:${imgSrc}`;
+    }
+
+    if (
+      imgSrc.startsWith("data:") ||
+      imgSrc.startsWith("http://") ||
+      imgSrc.startsWith("https://")
+    ) {
+      return imgSrc;
+    }
+
+    const baseUrl =
+      import.meta.env.VITE_ASSET_BASE_URL ||
+      (import.meta.env.VITE_API_BASE_URL ? import.meta.env.VITE_API_BASE_URL.replace(/\/api\/?$/, "") : "") ||
+      "https://landingpageapi.medantrik.com";
+
+    const cleanBase = baseUrl.replace(/\/$/, "");
+    const cleanPath = imgSrc.replace(/^\//, "");
+    return `${cleanBase}/${cleanPath}`;
   };
 
   const getDateString = (post) => {
-    const dateVal = post?.createdAt || post?.created_at || post?.publishDate;
+    const dateVal = post?.publishDate || post?.createdAt || post?.created_at;
     return dateVal ? new Date(dateVal).toLocaleDateString() : "";
+  };
+
+  const getAuthorName = (post) => {
+    if (typeof post?.author === "object" && post?.author?.name) {
+      return post.author.name;
+    }
+    if (typeof post?.author === "string") return post.author;
+    return "Admin";
   };
 
   const onKeyNavigate = (e, to) => {
@@ -116,7 +169,7 @@ export default function Home10() {
           {blogs.map((post, idx) => {
             const imageUrl = getImageUrl(post);
             const formattedDate = getDateString(post);
-            const postTitle = post.post_title || post.title;
+            const authorName = getAuthorName(post);
 
             return (
               <motion.article
@@ -143,7 +196,7 @@ export default function Home10() {
                   {imageUrl ? (
                     <img
                       src={imageUrl}
-                      alt={postTitle}
+                      alt={post.title}
                       className="rounded-xl w-full h-52 object-cover"
                       loading="lazy"
                     />
@@ -159,13 +212,13 @@ export default function Home10() {
                 </div>
 
                 <h3 className="text-lg md:text-xl font-bold text-gray-800 mb-3 line-clamp-2">
-                  {postTitle}
+                  {post.title}
                 </h3>
 
                 <div className="flex items-center justify-between text-sm text-gray-500">
                   <div className="flex items-center gap-2">
                     <FaUser className="text-orange-500" />
-                    <span>Admin</span>
+                    <span>{authorName}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <FaCalendarAlt className="text-orange-500" />

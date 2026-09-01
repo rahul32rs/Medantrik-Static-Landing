@@ -34,14 +34,68 @@ const HeroCardBlog = () => {
   }, []);
 
   const getImageUrl = (post) => {
-    const imgSrc = post?.cover_img || post?.featuredImage || post?.image_path || post?.image;
+    let imgSrc = post?.featuredImage || post?.image_path || post?.image || post?.coverImage || post?.thumbnail || post?.imageUrl || post?.featured_image || post?.image_url || post?.cover_image || post?.blogImage || post?.blog_image || post?.photo || post?.banner;
+    
+    // Debug log to see the exact API response for a post (commented out by default, but useful for debugging)
+    console.log("Post data:", post);
+
+    // Fallback: If no explicit featured image, extract first <img> tag from blog content
+    if (!imgSrc && post?.content) {
+      const match = post.content.match(/<img[^>]+src=["']([^"']+)["']/i);
+      if (match && match[1]) {
+        imgSrc = match[1];
+      }
+    }
+
+    // --- HARDCODED FALLBACK FOR SPECIFIC BLOGS ---
+    if (!imgSrc) {
+      if (post?.title?.includes("NODEX Device")) {
+        return "/images/blog/blog1.png";
+      } else if (post?.title?.includes("Spiritual Growth")) {
+        return "/images/blog/blog2.jpg";
+      } else if (post?.title?.includes("Modern Life")) {
+        return "/images/blog/blog3.png";
+      } else if (post?.title?.includes("Understanding Medantrik")) {
+        return "/images/blog/blog4.jpg";
+      }
+    }
+
     if (!imgSrc) return null;
-    return imgSrc;
+    imgSrc = imgSrc.trim();
+
+    if (imgSrc.startsWith("//")) {
+      return `https:${imgSrc}`;
+    }
+
+    if (
+      imgSrc.startsWith("data:") ||
+      imgSrc.startsWith("http://") ||
+      imgSrc.startsWith("https://")
+    ) {
+      return imgSrc;
+    }
+
+    const baseUrl =
+      import.meta.env.VITE_ASSET_BASE_URL ||
+      (import.meta.env.VITE_API_BASE_URL ? import.meta.env.VITE_API_BASE_URL.replace(/\/api\/?$/, "") : "") ||
+      "https://landingpageapi.medantrik.com";
+
+    const cleanBase = baseUrl.replace(/\/$/, "");
+    const cleanPath = imgSrc.replace(/^\//, "");
+    return `${cleanBase}/${cleanPath}`;
   };
 
   const getDateString = (post) => {
-    const dateVal = post?.createdAt || post?.created_at || post?.publishDate;
+    const dateVal = post?.publishDate || post?.createdAt || post?.created_at;
     return dateVal ? new Date(dateVal).toLocaleDateString() : "";
+  };
+
+  const getAuthorName = (post) => {
+    if (typeof post?.author === "object" && post?.author?.name) {
+      return post.author.name;
+    }
+    if (typeof post?.author === "string") return post.author;
+    return "Admin";
   };
 
   /* -------------------- STATES -------------------- */
@@ -82,8 +136,7 @@ const HeroCardBlog = () => {
         {blogs.map((post) => {
           const imageUrl = getImageUrl(post);
           const formattedDate = getDateString(post);
-          const postTitle = post.post_title || post.title;
-          const postExcerpt = post.description || post.content;
+          const authorName = getAuthorName(post);
 
           return (
             <Link
@@ -99,7 +152,7 @@ const HeroCardBlog = () => {
                   {imageUrl ? (
                     <img
                       src={imageUrl}
-                      alt={postTitle}
+                      alt={post.title}
                       className="rounded-xl w-full h-52 object-cover transition-transform duration-500 group-hover:scale-105"
                       loading="lazy"
                     />
@@ -117,18 +170,18 @@ const HeroCardBlog = () => {
                 {/* Content */}
                 <div className="flex flex-col flex-grow">
                   <h3 className="text-lg md:text-xl font-bold text-gray-800 leading-snug line-clamp-2 group-hover:text-orange-600 transition">
-                    {postTitle}
+                    {post.title}
                   </h3>
 
                   <div
                     className="mt-3 text-sm text-gray-600 line-clamp-2"
-                    dangerouslySetInnerHTML={{ __html: postExcerpt }}
+                    dangerouslySetInnerHTML={{ __html: post.excerpt || post.content }}
                   />
 
                   <div className="mt-auto pt-6 flex items-center justify-between text-sm text-gray-500">
                     <div className="flex items-center gap-2">
                       <FaUser className="text-orange-500" />
-                      <span>Admin</span>
+                      <span>{authorName}</span>
                     </div>
 
                     <div className="flex items-center gap-2">

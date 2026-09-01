@@ -95,7 +95,7 @@ const Contact1 = () => {
                 </h3>
                 <p className="text-sm mt-1">
                   Medantrik Medtech Pvt. Ltd. <br />
-                  CP - 042, Sector 63A, Noida <br />
+                  D-25, Sector 63A, Noida <br />
                   Uttar Pradesh, India, 201309
                 </p>
               </div>

@@ -24,3 +24,6 @@ dist-ssr
 *.sw?
 .meta-panel-trigger
 meta.bat
+
+*.zip
+

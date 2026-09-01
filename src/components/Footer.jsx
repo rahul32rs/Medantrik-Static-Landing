@@ -80,7 +80,7 @@ export default function Footer() {
               />
             </Link>
             <p className="mt-4 text-base leading-relaxed text-white/80">
-  Medantrik Medtech leverages AI and smart medical devices to deliver accurate,
+  Medantrik Medtech leverages Automation and smart medical & healthcare devices to deliver accurate,
   accessible, and personalized respiratory healthcare solutions.
 </p>
 
@@ -129,7 +129,7 @@ export default function Footer() {
               <li className="flex items-start gap-3">
                 <FiPhone className="mt-1 shrink-0" />
                 <a href="tel:+918004116503" className="hover:text-white">
-                  +91 8853667396
+                  +91 9718455346
                 </a>
               </li>
               <li className="flex items-start gap-3">

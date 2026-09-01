@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { FaArrowLeft, FaCalendarAlt, FaUser } from "react-icons/fa";
-import { getBlogById } from "../../../api/blogs.api";
+import { getBlogById, getBlogBySlug } from "../../../api/blogs.api";
 
 const BlogDetail = () => {
   const { id } = useParams();
@@ -13,20 +13,19 @@ const BlogDetail = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (!blog || blog.id?.toString() !== id) {
+    // Fetch from API if state is not available or doesn't match param
+    if (!blog || (blog.id?.toString() !== id && blog.slug !== id)) {
       setLoading(true);
       setError(null);
 
-      getBlogById(id)
+      const fetchCall = isNaN(id) ? getBlogBySlug(id) : getBlogById(id);
+
+      fetchCall
         .then((res) => {
-          if (res.data) {
-            setBlog(res.data);
-          } else {
-            setError("Blog post not found.");
-          }
+          setBlog(res.data?.blog || res.data?.data || res.data);
         })
         .catch((err) => {
-          console.error("Error fetching static blog details:", err);
+          console.error("Error fetching blog details:", err);
           setError("Blog post not found.");
         })
         .finally(() => {
@@ -36,14 +35,65 @@ const BlogDetail = () => {
   }, [id]);
 
   const getImageUrl = (b) => {
-    const imgSrc = b?.cover_img || b?.featuredImage || b?.image_path || b?.image;
+    let imgSrc = b?.featuredImage || b?.image_path || b?.image || b?.coverImage || b?.thumbnail || b?.imageUrl;
+
+    // Fallback: If no explicit featured image, extract first <img> tag from blog content
+    if (!imgSrc && b?.content) {
+      const match = b.content.match(/<img[^>]+src=["']([^"']+)["']/i);
+      if (match && match[1]) {
+        imgSrc = match[1];
+      }
+    }
+
+    // --- HARDCODED FALLBACK FOR SPECIFIC BLOGS ---
+    if (!imgSrc) {
+      if (b?.title?.includes("NODEX Device")) {
+        return "/images/blog/blog1.png";
+      } else if (b?.title?.includes("Spiritual Growth")) {
+        return "/images/blog/blog2.jpg";
+      } else if (b?.title?.includes("Modern Life")) {
+        return "/images/blog/blog3.png";
+      } else if (b?.title?.includes("Understanding Medantrik")) {
+        return "/images/blog/blog4.jpg";
+      }
+    }
+
     if (!imgSrc) return null;
-    return imgSrc;
+    imgSrc = imgSrc.trim();
+
+    if (imgSrc.startsWith("//")) {
+      return `https:${imgSrc}`;
+    }
+
+    if (
+      imgSrc.startsWith("data:") ||
+      imgSrc.startsWith("http://") ||
+      imgSrc.startsWith("https://")
+    ) {
+      return imgSrc;
+    }
+
+    const baseUrl =
+      import.meta.env.VITE_ASSET_BASE_URL ||
+      (import.meta.env.VITE_API_BASE_URL ? import.meta.env.VITE_API_BASE_URL.replace(/\/api\/?$/, "") : "") ||
+      "https://landingpageapi.medantrik.com";
+
+    const cleanBase = baseUrl.replace(/\/$/, "");
+    const cleanPath = imgSrc.replace(/^\//, "");
+    return `${cleanBase}/${cleanPath}`;
   };
 
   const getDateString = (b) => {
-    const dateVal = b?.createdAt || b?.created_at || b?.publishDate;
+    const dateVal = b?.publishDate || b?.createdAt || b?.created_at;
     return dateVal ? new Date(dateVal).toLocaleDateString() : "";
+  };
+
+  const getAuthorName = (b) => {
+    if (typeof b?.author === "object" && b?.author?.name) {
+      return b.author.name;
+    }
+    if (typeof b?.author === "string") return b.author;
+    return "Admin";
   };
 
   if (loading) {
@@ -73,8 +123,7 @@ const BlogDetail = () => {
 
   const imageUrl = getImageUrl(blog);
   const formattedDate = getDateString(blog);
-  const postTitle = blog.post_title || blog.title;
-  const postContent = blog.content || blog.description;
+  const authorName = getAuthorName(blog);
 
   return (
     <div className="bg-gradient-to-b from-gray-50 to-white min-h-screen">
@@ -98,7 +147,7 @@ const BlogDetail = () => {
             <div className="relative">
               <img
                 src={imageUrl}
-                alt={postTitle}
+                alt={blog.title}
                 className="w-full h-[360px] object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
@@ -111,7 +160,7 @@ const BlogDetail = () => {
             <div className="flex items-center justify-center gap-6 text-sm text-gray-500 mb-4">
               <div className="flex items-center gap-2">
                 <FaUser className="text-orange-500" />
-                <span>Admin</span>
+                <span>{authorName}</span>
               </div>
               {formattedDate && (
                 <div className="flex items-center gap-2">
@@ -123,7 +172,7 @@ const BlogDetail = () => {
 
             {/* Title */}
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-center text-gray-900 leading-tight mb-10">
-              {postTitle}
+              {blog.title}
             </h1>
 
             {/* Divider */}
@@ -132,7 +181,7 @@ const BlogDetail = () => {
             {/* Article Content */}
             <div
               className="prose prose-lg max-w-none prose-headings:text-gray-900 prose-p:text-gray-700 prose-a:text-orange-600 prose-strong:text-gray-900"
-              dangerouslySetInnerHTML={{ __html: postContent }}
+              dangerouslySetInnerHTML={{ __html: blog.content }}
             />
 
             {/* Footer */}
