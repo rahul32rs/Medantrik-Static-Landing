@@ -43,7 +43,7 @@ export default function Footer() {
     { Icon: FaLinkedinIn, label: "LinkedIn", href: "https://www.linkedin.com/company/89568114/admin/dashboard/" },
     { Icon: FaYoutube, label: "YouTube", href: "https://www.youtube.com/@medantrik" },
     // { Icon: FaGithub, label: "GitHub", href: "https://github.com/MEDANTRIK" },
-    { Icon: FaWhatsapp, label: "WhatsApp", href: "https://wa.me/8004116503" },
+    { Icon: FaWhatsapp, label: "WhatsApp", href: "https://wa.me/919718455346" },
   ];
 
   const quickLinks = [
@@ -124,17 +124,17 @@ export default function Footer() {
             <ul className="mt-4 space-y-3 text-white/80">
               <li className="flex items-start gap-3">
                 <FiClock className="mt-1 shrink-0" />
-                <span>9 AM – 5 PM, Monday – Saturday</span>
+                <span>9 AM – 6 PM, Monday – Saturday</span>
               </li>
               <li className="flex items-start gap-3">
                 <FiPhone className="mt-1 shrink-0" />
-                <a href="tel:+918004116503" className="hover:text-white">
-                  +91 9718455346
+                <a href="tel:+919718455346" className="hover:text-white">
+                  +91 9718455346, 7836862013
                 </a>
               </li>
               <li className="flex items-start gap-3">
                 <FiMail className="mt-1 shrink-0" />
-                <a href="mailto:info@medantrik.in" className="hover:text-white">
+                <a href="mailto:info@medantrik.com" className="hover:text-white">
                   info@medantrik.com
                 </a>
               </li>
@@ -145,7 +145,7 @@ export default function Footer() {
             </ul>
 
             <a
-              href="tel:+918004116503"
+              href="tel:+919718455346"
               className="mt-5 inline-flex items-center justify-center gap-2 rounded-xl bg-amber-500 px-4 py-2 font-semibold text-[#0b133c] shadow-sm ring-1 ring-amber-400/60 hover:bg-amber-400 transition"
             >
               <FiPhone /> Call Us Today
@@ -188,7 +188,7 @@ export default function Footer() {
               className="mb-3 flex flex-col items-center space-y-3"
             >
               <a
-                href="tel:+918004116503"
+                href="tel:+919718455346"
                 onClick={() => setSupportOpen(false)}
                 className="h-12 w-12 rounded-full overflow-hidden shadow-lg border border-white/40 hover:scale-110 transition-transform"
               >
@@ -196,7 +196,7 @@ export default function Footer() {
               </a>
 
               <a
-                href="https://wa.me/8004116503"
+                href="https://wa.me/919718455346"
                 target="_blank"
                 rel="noreferrer"
                 onClick={() => setSupportOpen(false)}
